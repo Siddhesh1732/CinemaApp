@@ -369,8 +369,8 @@ users ──────────────── user_movie_list ───
 
 ## 👨‍💻 Author
 
-**Siddhesh Karemore**
-- GitHub: [@yourusername](https://github.com/Siddhesh1732)
+**Siddhesh**
+- GitHub: [@Siddhesh1732](https://github.com/Siddhesh1732)
 
 ---
 
