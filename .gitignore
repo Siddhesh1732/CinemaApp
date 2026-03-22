@@ -1,10 +1,11 @@
+# ── MAVEN ────────────────────────────────────────────
 HELP.md
 target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
 
-### STS ###
+# ── STS ──────────────────────────────────────────────
 .apt_generated
 .classpath
 .factorypath
@@ -13,13 +14,13 @@ target/
 .springBeans
 .sts4-cache
 
-### IntelliJ IDEA ###
+# ── IntelliJ IDEA ─────────────────────────────────────
 .idea
 *.iws
 *.iml
 *.ipr
 
-### NetBeans ###
+# ── NetBeans ──────────────────────────────────────────
 /nbproject/private/
 /nbbuild/
 /dist/
@@ -29,5 +30,25 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
-### VS Code ###
+# ── VS Code ───────────────────────────────────────────
 .vscode/
+
+# ── OS FILES ──────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── SPRING BOOT LOGS ──────────────────────────────────
+*.log
+logs/
+
+# ── SECRETS — never commit real credentials ───────────
+application-prod.properties
+application-local.properties
+
+# ── REACT / NODE ──────────────────────────────────────
+movieapp-frontend/node_modules/
+movieapp-frontend/dist/
+movieapp-frontend/.env
+movieapp-frontend/.env.local
+movieapp-frontend/.env.production
+movieapp-frontend/coverage/
