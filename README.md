@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🎬 MovieApp
+# 🎬 CinemaApp
 
 ### *Your Personal Movie Universe*
 
