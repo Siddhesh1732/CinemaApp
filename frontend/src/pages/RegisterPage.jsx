@@ -43,7 +43,7 @@ export default function RegisterPage() {
           <div className="w-20 h-20 bg-amber-500/10 border border-amber-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
             <Film size={36} className="text-amber-400" />
           </div>
-          <h2 className="font-display text-5xl text-slate-100 tracking-widest mb-3">MOVIEAPP</h2>
+          <h2 className="font-display text-5xl text-slate-100 tracking-widest mb-3">CINEMA PREMI</h2>
           <p className="text-slate-500 text-sm">Start tracking your movie journey</p>
         </div>
       </div>
@@ -53,7 +53,7 @@ export default function RegisterPage() {
         <div className="w-full max-w-md page-enter">
           <div className="mb-8">
             <h1 className="text-2xl font-semibold text-slate-100 mb-1">Create your account</h1>
-            <p className="text-slate-500 text-sm">Join MovieApp and start exploring</p>
+            <p className="text-slate-500 text-sm">Join CINEMA PREMI and start exploring</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">

@@ -8,7 +8,7 @@ export default function StarRating({ value = 0, onChange, readonly = false, size
 
   return (
     <div className="flex items-center gap-0.5">
-      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(star => (
+      {[1, 2, 3, 4, 5].map(star => (
         <button
           key={star}
           type="button"
@@ -27,7 +27,7 @@ export default function StarRating({ value = 0, onChange, readonly = false, size
         </button>
       ))}
       {value > 0 && (
-        <span className="ml-2 text-sm font-semibold text-amber-400">{value}/10</span>
+        <span className="ml-2 text-sm font-semibold text-amber-400">{value}/5</span>
       )}
     </div>
   )

@@ -2,6 +2,7 @@ package com.project.cinema.controller;
 
 import com.project.cinema.dto.MovieRequest;
 import com.project.cinema.dto.MovieResponse;
+import com.project.cinema.dto.MovieReviewResponse;
 import com.project.cinema.service.MovieService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -66,5 +67,12 @@ public class MovieController {
     public ResponseEntity<Void> deleteMovie(@PathVariable Long id) {
         movieService.deleteMovie(id);
         return ResponseEntity.noContent().build(); // 204 No Content
+    }
+
+    // GET /api/movies/{id}/reviews
+    // Public within authenticated users — anyone logged in can see all reviews
+    @GetMapping("/{id}/reviews")
+    public ResponseEntity<List<MovieReviewResponse>> getMovieReviews(@PathVariable Long id) {
+        return ResponseEntity.ok(movieService.getMovieReviews(id));
     }
 }

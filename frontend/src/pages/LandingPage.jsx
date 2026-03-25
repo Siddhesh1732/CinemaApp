@@ -11,7 +11,7 @@ export default function LandingPage() {
           <div className="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center">
             <Film size={16} className="text-black" />
           </div>
-          <span className="font-display text-xl tracking-widest text-slate-100">MOVIEAPP</span>
+          <span className="font-display text-xl tracking-widest text-slate-100">CINEMA PREMI</span>
         </div>
         <div className="flex items-center gap-3">
           <Link to="/login" className="text-slate-400 hover:text-slate-200 text-sm font-medium px-4 py-2 transition-colors">

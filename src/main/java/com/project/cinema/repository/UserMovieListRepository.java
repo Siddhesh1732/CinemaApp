@@ -21,4 +21,16 @@ public interface UserMovieListRepository extends JpaRepository<UserMovieList, Lo
     // Fetch all rated entries for a movie — used for average rating calculation
     List<UserMovieList> findByMovieAndListTypeAndRatingIsNotNull(Movie movie, UserMovieList.ListType listType);
 
+    // Fetch all entries for a movie that have a non-null review — used for reviews section
+    List<UserMovieList> findByMovieAndListTypeAndReviewIsNotNull(
+            Movie movie, UserMovieList.ListType listType);
+
+
+    // ── Used in RecommendationService ─────────────────────────────────────
+
+    // Fetch all WATCHED entries for a user that have a rating — used to build preference map
+    // Same method as above but called with user parameter — Spring derives the query automatically
+    List<UserMovieList> findByUserAndListTypeAndRatingIsNotNull(
+            User user, UserMovieList.ListType listType);
+
 }

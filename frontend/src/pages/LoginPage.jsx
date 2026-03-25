@@ -41,7 +41,7 @@ export default function LoginPage() {
           <div className="w-20 h-20 bg-amber-500/10 border border-amber-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
             <Film size={36} className="text-amber-400" />
           </div>
-          <h2 className="font-display text-5xl text-slate-100 tracking-widest mb-3">MOVIEAPP</h2>
+          <h2 className="font-display text-5xl text-slate-100 tracking-widest mb-3">CINEMA PREMI</h2>
           <p className="text-slate-500 text-sm">Your personal movie universe</p>
         </div>
       </div>

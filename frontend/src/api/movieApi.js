@@ -17,3 +17,6 @@ export const updateMovie = (id, data) =>
 
 export const deleteMovie = (id) =>
   api.delete(`/movies/${id}`)
+
+export const getMovieReviews = (id) =>
+  api.get(`/movies/${id}/reviews`)

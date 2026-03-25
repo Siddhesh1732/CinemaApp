@@ -3,12 +3,15 @@ package com.project.cinema.service;
 
 import com.project.cinema.dto.MovieRequest;
 import com.project.cinema.dto.MovieResponse;
+import com.project.cinema.dto.MovieReviewResponse;
 import com.project.cinema.models.CastMember;
 import com.project.cinema.models.Genre;
 import com.project.cinema.models.Movie;
+import com.project.cinema.models.UserMovieList;
 import com.project.cinema.repository.CastMemberRepository;
 import com.project.cinema.repository.GenreRepository;
 import com.project.cinema.repository.MovieRepository;
+import com.project.cinema.repository.UserMovieListRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,6 +27,7 @@ public class MovieService {
     private final MovieRepository movieRepository;
     private final GenreRepository genreRepository;
     private final CastMemberRepository castMemberRepository;
+    private final UserMovieListRepository userMovieListRepository;
 
     // ── Helper: convert Movie entity → MovieResponse DTO ──────────────────
     private MovieResponse toResponse(Movie movie) {
@@ -132,5 +136,26 @@ public class MovieService {
             throw new RuntimeException("Movie not found with id: " + id);
         }
         movieRepository.deleteById(id);
+    }
+
+
+    // ── GET /api/movies/{id}/reviews ───────────────────────────────────────
+    public List<MovieReviewResponse> getMovieReviews(Long movieId) {
+        Movie movie = movieRepository.findById(movieId)
+                .orElseThrow(() -> new RuntimeException("Movie not found with id: " + movieId));
+
+        return userMovieListRepository
+                .findByMovieAndListTypeAndReviewIsNotNull(movie, UserMovieList.ListType.WATCHED)
+                .stream()
+                .filter(entry -> entry.getReview() != null && !entry.getReview().isBlank())
+                .map(entry -> MovieReviewResponse.builder()
+                        .userId(entry.getUser().getId())
+                        .username(entry.getUser().getUsername())
+                        .profilePictureUrl(entry.getUser().getProfilePictureUrl())
+                        .rating(entry.getRating())
+                        .review(entry.getReview())
+                        .addedAt(entry.getAddedAt())
+                        .build())
+                .collect(Collectors.toList());
     }
 }

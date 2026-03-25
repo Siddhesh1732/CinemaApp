@@ -1,22 +1,53 @@
-import { useState, useEffect, useCallback } from 'react'
-import { Search, ChevronLeft, ChevronRight, SlidersHorizontal } from 'lucide-react'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { Search, ChevronLeft, ChevronRight, Sparkles } from 'lucide-react'
 import { getAllMovies, searchMovies } from '../api/movieApi'
 import { getAllGenres } from '../api/genreApi'
+import { getRecommendations } from '../api/recommendationApi'
 import MovieCard from '../components/MovieCard'
 import Spinner from '../components/Spinner'
 import { toast } from 'react-toastify'
 
 export default function HomePage() {
-  const [movies, setMovies] = useState([])
-  const [genres, setGenres] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [query, setQuery] = useState('')
-  const [searchResults, setSearchResults] = useState(null)
-  const [page, setPage] = useState(0)
-  const [totalPages, setTotalPages] = useState(1)
-  const [selectedGenre, setSelectedGenre] = useState('')
-  const [sort, setSort] = useState('releaseYear,desc')
+  const [movies, setMovies]                   = useState([])
+  const [genres, setGenres]                   = useState([])
+  const [recommendations, setRecommendations] = useState([])
+  const [recsLoading, setRecsLoading]         = useState(true)
+  const [loading, setLoading]                 = useState(true)
+  const [query, setQuery]                     = useState('')
+  const [searchResults, setSearchResults]     = useState(null)
+  const [page, setPage]                       = useState(0)
+  const [totalPages, setTotalPages]           = useState(1)
+  const [selectedGenre, setSelectedGenre]     = useState('')
+  const [sort, setSort]                       = useState('releaseYear,desc')
 
+  // Refs and state for recommendation scroll arrows
+  const recsRef                               = useRef(null)
+  const [showLeftArrow, setShowLeftArrow]     = useState(false)
+  const [showRightArrow, setShowRightArrow]   = useState(true)
+
+  // Called on every scroll event inside the recommendations row
+  const handleRecsScroll = () => {
+    const el = recsRef.current
+    if (!el) return
+    setShowLeftArrow(el.scrollLeft > 10)
+    setShowRightArrow(el.scrollLeft + el.clientWidth < el.scrollWidth - 10)
+  }
+
+  // Check arrow visibility when recommendations load
+  useEffect(() => {
+    const el = recsRef.current
+    if (!el) return
+    setShowRightArrow(el.scrollWidth > el.clientWidth)
+  }, [recommendations])
+
+  // Scroll left or right by ~2 card widths on arrow click
+  const scrollRecs = (direction) => {
+    const el = recsRef.current
+    if (!el) return
+    el.scrollBy({ left: direction === 'right' ? 300 : -300, behavior: 'smooth' })
+  }
+
+  // Fetch paginated movies
   const fetchMovies = useCallback(async () => {
     setLoading(true)
     try {
@@ -30,11 +61,29 @@ export default function HomePage() {
     }
   }, [page, sort])
 
-  useEffect(() => { fetchMovies() }, [fetchMovies])
-
+  // Fetch genres for filter dropdown
   useEffect(() => {
     getAllGenres().then(res => setGenres(res.data)).catch(() => {})
   }, [])
+
+  // Fetch recommendations on mount
+  useEffect(() => {
+    const fetchRecs = async () => {
+      setRecsLoading(true)
+      try {
+        const res = await getRecommendations()
+        setRecommendations(res.data)
+      } catch {
+        // Silently fail — recommendations are non-critical
+        setRecommendations([])
+      } finally {
+        setRecsLoading(false)
+      }
+    }
+    fetchRecs()
+  }, [])
+
+  useEffect(() => { fetchMovies() }, [fetchMovies])
 
   const handleSearch = async (e) => {
     e.preventDefault()
@@ -59,13 +108,77 @@ export default function HomePage() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 page-enter">
 
-      {/* Header */}
+      {/* ── Recommendations Section ───────────────────────────────────────── */}
+      {!recsLoading && recommendations.length > 0 && (
+        <div className="mb-10">
+
+          {/* Section header */}
+          <div className="flex items-center gap-2.5 mb-4">
+            <div className="w-7 h-7 bg-amber-500/15 rounded-lg flex items-center justify-center">
+              <Sparkles size={15} className="text-amber-400" />
+            </div>
+            <h2 className="text-lg font-semibold text-slate-200">Recommended For You</h2>
+            <span className="text-xs text-slate-600 ml-1">Based on your ratings</span>
+          </div>
+
+          {/* Scrollable row with arrows */}
+          <div className="relative">
+
+            {/* Left Arrow — only visible when scrolled right */}
+            {showLeftArrow && (
+              <button
+                onClick={() => scrollRecs('left')}
+                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 z-20
+                           w-9 h-9 rounded-full bg-[#10101A] border border-[#1E1E2E]
+                           flex items-center justify-center shadow-lg
+                           text-slate-400 hover:text-amber-400 hover:border-amber-500/40
+                           transition-all duration-200"
+              >
+                <ChevronLeft size={18} />
+              </button>
+            )}
+
+            {/* Right Arrow — only visible when more content to the right */}
+            {showRightArrow && (
+              <button
+                onClick={() => scrollRecs('right')}
+                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 z-20
+                           w-9 h-9 rounded-full bg-[#10101A] border border-[#1E1E2E]
+                           flex items-center justify-center shadow-lg
+                           text-slate-400 hover:text-amber-400 hover:border-amber-500/40
+                           transition-all duration-200"
+              >
+                <ChevronRight size={18} />
+              </button>
+            )}
+
+            {/* Cards row */}
+            <div
+              ref={recsRef}
+              onScroll={handleRecsScroll}
+              className="flex gap-3 overflow-x-auto pb-3"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              {recommendations.map(movie => (
+                <div key={movie.id} className="flex-shrink-0 w-48">
+                  <MovieCard movie={movie} />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="mt-8 border-t border-[#1E1E2E]" />
+        </div>
+      )}
+
+      {/* ── Explore Header ────────────────────────────────────────────────── */}
       <div className="mb-8">
         <h1 className="section-title mb-1">EXPLORE MOVIES</h1>
         <p className="text-slate-500 text-sm">Discover something great to watch tonight</p>
       </div>
 
-      {/* Search + Filters */}
+      {/* ── Search + Filters ──────────────────────────────────────────────── */}
       <div className="flex flex-col md:flex-row gap-3 mb-8">
         <form onSubmit={handleSearch} className="flex-1 flex gap-2">
           <div className="relative flex-1">
@@ -84,7 +197,6 @@ export default function HomePage() {
         </form>
 
         <div className="flex gap-2">
-          {/* Genre filter */}
           <select
             value={selectedGenre}
             onChange={(e) => setSelectedGenre(e.target.value)}
@@ -94,7 +206,6 @@ export default function HomePage() {
             {genres.map(g => <option key={g.id} value={g.name}>{g.name}</option>)}
           </select>
 
-          {/* Sort */}
           <select
             value={sort}
             onChange={(e) => { setSort(e.target.value); setPage(0) }}
@@ -108,14 +219,14 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Status bar */}
+      {/* Search results label */}
       {searchResults !== null && (
         <div className="mb-4 text-sm text-slate-500">
           Found <span className="text-amber-400 font-medium">{displayMovies.length}</span> results for "{query}"
         </div>
       )}
 
-      {/* Movies grid */}
+      {/* ── Movies Grid ───────────────────────────────────────────────────── */}
       {loading ? (
         <Spinner text="Loading movies..." />
       ) : displayMovies.length === 0 ? (
@@ -130,7 +241,7 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* Pagination — only show when not in search mode */}
+      {/* ── Pagination ────────────────────────────────────────────────────── */}
       {searchResults === null && !loading && totalPages > 1 && (
         <div className="flex items-center justify-center gap-3 mt-10">
           <button
