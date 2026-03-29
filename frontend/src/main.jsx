@@ -14,7 +14,14 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         position="bottom-right"
         autoClose={3000}
         theme="dark"
-        toastStyle={{ background: '#10101A', border: '1px solid #1E1E2E', color: '#E2E8F0' }}
+        toastStyle={{
+          background: 'rgba(11,15,26,0.95)',
+          border: '1px solid rgba(6,182,212,0.3)',
+          color: '#F1F5F9',
+          backdropFilter: 'blur(20px)',
+          fontFamily: 'Syne, sans-serif',
+          fontSize: '13px',
+        }}
       />
     </AuthProvider>
   </React.StrictMode>

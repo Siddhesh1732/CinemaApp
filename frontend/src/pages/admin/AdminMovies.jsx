@@ -1,151 +1,85 @@
 import { useState, useEffect } from 'react'
-import { Plus, Pencil, Trash2, ChevronLeft, Search, Star, Film } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { Plus, Pencil, Trash2, ChevronLeft, Search, Film, Star, ChevronRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { getAllMovies, searchMovies, createMovie, updateMovie, deleteMovie } from '../../api/movieApi'
 import { getAllGenres } from '../../api/genreApi'
 import { getAllCastMembers, searchCastMembers } from '../../api/castMemberApi'
-import Modal from '../../components/Modal'
-import Spinner from '../../components/Spinner'
+import { BlurModal, Spinner, GradientButton } from '../../components/UI'
 import { toast } from 'react-toastify'
 
 const STATUSES = ['RELEASED', 'UPCOMING', 'IN_PRODUCTION']
-
 const emptyForm = {
-  title: '',
-  releaseYear: '',
-  description: '',
-  posterUrl: '',
-  trailerUrl: '',
-  language: '',
-  country: '',
-  durationMinutes: '',
-  status: 'RELEASED',
-  genreIds: [],
-  castMemberIds: [],
+  title: '', releaseYear: '', description: '', posterUrl: '', trailerUrl: '',
+  language: '', country: '', durationMinutes: '', status: 'RELEASED',
+  genreIds: [], castMemberIds: [],
 }
 
 export default function AdminMovies() {
-  const [movies, setMovies]           = useState([])
-  const [genres, setGenres]           = useState([])
-  const [castMembers, setCastMembers] = useState([])
-  const [castSearch, setCastSearch]   = useState('')
-  const [loading, setLoading]         = useState(true)
-  const [search, setSearch]           = useState('')
-  const [page, setPage]               = useState(0)
-  const [totalPages, setTotalPages]   = useState(1)
-  const [modalOpen, setModalOpen]     = useState(false)
-  const [editing, setEditing]         = useState(null)
-  const [form, setForm]               = useState(emptyForm)
-  const [saving, setSaving]           = useState(false)
+  const [movies, setMovies]       = useState([])
+  const [genres, setGenres]       = useState([])
+  const [cast, setCast]           = useState([])
+  const [loading, setLoading]     = useState(true)
+  const [search, setSearch]       = useState('')
   const [searchResults, setSearchResults] = useState(null)
+  const [page, setPage]           = useState(0)
+  const [totalPages, setTotalPages] = useState(1)
+  const [modalOpen, setModal]     = useState(false)
+  const [editing, setEditing]     = useState(null)
+  const [form, setForm]           = useState(emptyForm)
+  const [saving, setSaving]       = useState(false)
+  const [castSearch, setCastSearch] = useState('')
 
-  // Fetch paginated movies
   const fetchMovies = async (p = 0) => {
     setLoading(true)
     try {
-      const res = await getAllMovies(p, 10, 'id,desc')
-      setMovies(res.data.content)
-      setTotalPages(res.data.totalPages)
-      setPage(p)
-    } catch { toast.error('Failed to load movies') }
-    finally { setLoading(false) }
+      const r = await getAllMovies(p, 10, 'id,desc')
+      setMovies(r.data.content); setTotalPages(r.data.totalPages); setPage(p)
+    } catch { toast.error('Failed') } finally { setLoading(false) }
   }
-
-  // Fetch genres and cast members for the form dropdowns
   const fetchFormData = async () => {
     try {
-      const [genreRes, castRes] = await Promise.all([
-        getAllGenres(),
-        getAllCastMembers(0, 100)
-      ])
-      setGenres(genreRes.data)
-      setCastMembers(castRes.data.content || [])
-    } catch { toast.error('Failed to load form data') }
+      const [gr, cr] = await Promise.all([getAllGenres(), getAllCastMembers(0, 100)])
+      setGenres(gr.data); setCast(cr.data.content || [])
+    } catch {}
   }
-
   useEffect(() => { fetchMovies(); fetchFormData() }, [])
 
-  // Search movies
   const handleSearch = async (e) => {
     e.preventDefault()
     if (!search.trim()) { setSearchResults(null); fetchMovies(0); return }
     setLoading(true)
-    try {
-      const res = await searchMovies(search.trim())
-      setSearchResults(res.data)
-    } catch { toast.error('Search failed') }
-    finally { setLoading(false) }
+    try { const r = await searchMovies(search.trim()); setSearchResults(r.data) }
+    catch { toast.error('Search failed') } finally { setLoading(false) }
   }
 
-  const clearSearch = () => { setSearch(''); setSearchResults(null); fetchMovies(0) }
-
-  // Search cast members inside modal
   const handleCastSearch = async (e) => {
-    const val = e.target.value
-    setCastSearch(val)
-    if (!val.trim()) {
-      const res = await getAllCastMembers(0, 100)
-      setCastMembers(res.data.content || [])
-      return
-    }
-    try {
-      const res = await searchCastMembers(val)
-      setCastMembers(res.data)
-    } catch {}
+    const v = e.target.value; setCastSearch(v)
+    if (!v.trim()) { const r = await getAllCastMembers(0, 100); setCast(r.data.content || []); return }
+    try { const r = await searchCastMembers(v); setCast(r.data) } catch {}
   }
 
-  // Open create modal
-  const openCreate = () => {
-    setEditing(null)
-    setForm(emptyForm)
-    setCastSearch('')
-    setModalOpen(true)
-  }
-
-  // Open edit modal — pre-fill with existing data
-  const openEdit = (movie) => {
-    setEditing(movie)
+  const openCreate = () => { setEditing(null); setForm(emptyForm); setCastSearch(''); setModal(true) }
+  const openEdit   = (m) => {
+    setEditing(m)
     setForm({
-      title:           movie.title,
-      releaseYear:     movie.releaseYear || '',
-      description:     movie.description || '',
-      posterUrl:       movie.posterUrl || '',
-      trailerUrl:      movie.trailerUrl || '',
-      language:        movie.language || '',
-      country:         movie.country || '',
-      durationMinutes: movie.durationMinutes || '',
-      status:          movie.status || 'RELEASED',
-      genreIds:        [], // We only have names, not IDs from MovieResponse
-      castMemberIds:   [], // Same — admin can re-select if needed
+      title: m.title, releaseYear: m.releaseYear || '', description: m.description || '',
+      posterUrl: m.posterUrl || '', trailerUrl: m.trailerUrl || '', language: m.language || '',
+      country: m.country || '', durationMinutes: m.durationMinutes || '', status: m.status || 'RELEASED',
+      genreIds: [], castMemberIds: [],
     })
-    setCastSearch('')
-    setModalOpen(true)
+    setCastSearch(''); setModal(true)
   }
 
-  // Toggle genre selection
-  const toggleGenre = (id) => {
-    setForm(f => ({
-      ...f,
-      genreIds: f.genreIds.includes(id)
-        ? f.genreIds.filter(g => g !== id)
-        : [...f.genreIds, id]
-    }))
-  }
+  const toggleGenre = (id) => setForm(f => ({
+    ...f, genreIds: f.genreIds.includes(id) ? f.genreIds.filter(g => g !== id) : [...f.genreIds, id]
+  }))
+  const toggleCast = (id) => setForm(f => ({
+    ...f, castMemberIds: f.castMemberIds.includes(id) ? f.castMemberIds.filter(c => c !== id) : [...f.castMemberIds, id]
+  }))
 
-  // Toggle cast member selection
-  const toggleCast = (id) => {
-    setForm(f => ({
-      ...f,
-      castMemberIds: f.castMemberIds.includes(id)
-        ? f.castMemberIds.filter(c => c !== id)
-        : [...f.castMemberIds, id]
-    }))
-  }
-
-  // Save movie (create or update)
   const handleSave = async (e) => {
-    e.preventDefault()
-    setSaving(true)
+    e.preventDefault(); setSaving(true)
     const payload = {
       ...form,
       releaseYear:     form.releaseYear     ? parseInt(form.releaseYear)     : null,
@@ -153,375 +87,279 @@ export default function AdminMovies() {
     }
     try {
       if (editing) {
-        const res = await updateMovie(editing.id, payload)
-        setMovies(prev => prev.map(m => m.id === editing.id ? res.data : m))
-        if (searchResults) setSearchResults(prev => prev.map(m => m.id === editing.id ? res.data : m))
+        const r = await updateMovie(editing.id, payload)
+        setMovies(prev => prev.map(m => m.id === editing.id ? r.data : m))
+        if (searchResults) setSearchResults(prev => prev.map(m => m.id === editing.id ? r.data : m))
         toast.success('Movie updated!')
       } else {
-        const res = await createMovie(payload)
-        setMovies(prev => [res.data, ...prev])
+        const r = await createMovie(payload)
+        setMovies(prev => [r.data, ...prev])
         toast.success('Movie created!')
       }
-      setModalOpen(false)
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to save movie')
-    } finally { setSaving(false) }
+      setModal(false)
+    } catch (err) { toast.error(err.response?.data?.message || 'Failed') }
+    finally { setSaving(false) }
   }
 
-  // Delete movie
   const handleDelete = async (id) => {
-    if (!confirm('Delete this movie? This cannot be undone.')) return
+    if (!confirm('Delete this movie?')) return
     try {
       await deleteMovie(id)
       setMovies(prev => prev.filter(m => m.id !== id))
       if (searchResults) setSearchResults(prev => prev.filter(m => m.id !== id))
-      toast.success('Movie deleted')
-    } catch { toast.error('Failed to delete movie') }
+      toast.success('Deleted')
+    } catch { toast.error('Failed') }
   }
 
-  const displayMovies = searchResults !== null ? searchResults : movies
-  const placeholder = (title) => `https://placehold.co/60x90/10101A/F59E0B?text=${encodeURIComponent(title?.[0] || '?')}`
+  const display = searchResults !== null ? searchResults : movies
+  const placeholder = (t) => `https://placehold.co/60x90/0B0F1A/06B6D4?text=${encodeURIComponent(t?.[0] || '?')}`
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8 page-enter">
+    <div className="max-w-5xl mx-auto px-4 py-8">
+      <div className="fixed inset-0 grid-bg opacity-15 pointer-events-none" />
 
-      {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+        className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
-          <Link to="/admin" className="text-slate-500 hover:text-slate-300 transition-colors">
-            <ChevronLeft size={20} />
+          <Link to="/admin">
+            <motion.div whileHover={{ x: -3 }} className="p-2 rounded-xl text-slate-600 hover:text-cyan-400 transition-colors"
+              style={{ background: 'rgba(255,255,255,0.03)' }}>
+              <ChevronLeft size={16} />
+            </motion.div>
           </Link>
           <div>
-            <h1 className="section-title leading-none">MOVIES</h1>
-            <p className="text-slate-500 text-sm">Manage the movie database</p>
+            <h1 className="font-display text-xl tracking-widest text-white">MOVIES</h1>
+            <p className="font-mono text-xs text-slate-600 mt-0.5">MANAGE FILM DATABASE</p>
           </div>
         </div>
-        <button onClick={openCreate} className="btn-primary flex items-center gap-2">
-          <Plus size={16} /> Add Movie
-        </button>
-      </div>
+        <motion.button whileHover={{ scale: 1.03, boxShadow: '0 0 30px rgba(6,182,212,0.4)' }}
+          whileTap={{ scale: 0.97 }} onClick={openCreate} className="btn-primary flex items-center gap-2 text-xs tracking-widest">
+          <Plus size={14} /> ADD MOVIE
+        </motion.button>
+      </motion.div>
 
-      {/* Search bar */}
+      {/* Search */}
       <form onSubmit={handleSearch} className="flex gap-3 mb-6">
         <div className="relative flex-1">
-          <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
-          <input
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Search movies by title..."
-            className="input-field pl-10"
-          />
+          <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600" />
+          <input value={search} onChange={e => setSearch(e.target.value)}
+            placeholder="SEARCH MOVIES..." className="input-field pl-11 font-mono text-sm tracking-wide" />
         </div>
-        <button type="submit" className="btn-secondary px-5">Search</button>
+        <motion.button type="submit" whileHover={{ scale: 1.02 }} className="btn-ghost text-xs font-mono tracking-widest px-5">SEARCH</motion.button>
         {searchResults !== null && (
-          <button type="button" onClick={clearSearch} className="btn-secondary px-4">Clear</button>
+          <motion.button type="button" whileHover={{ scale: 1.02 }}
+            onClick={() => { setSearch(''); setSearchResults(null); fetchMovies(0) }}
+            className="btn-ghost text-xs font-mono px-4">CLEAR</motion.button>
         )}
       </form>
 
-      {/* Movie list */}
-      {loading ? (
-        <Spinner text="Loading movies..." />
-      ) : displayMovies.length === 0 ? (
-        <div className="text-center py-16 text-slate-600">
-          <Film size={48} className="mx-auto mb-3 opacity-30" />
-          <p>No movies found</p>
+      {/* List */}
+      {loading ? <Spinner text="LOADING" /> : display.length === 0 ? (
+        <div className="text-center py-20 text-slate-800">
+          <Film size={48} className="mx-auto mb-3 opacity-15" />
+          <p className="font-display tracking-widest text-sm">NO MOVIES FOUND</p>
         </div>
       ) : (
         <>
           <div className="space-y-2">
-            {displayMovies.map(movie => (
-              <div
-                key={movie.id}
-                className="flex items-center gap-4 p-4 card hover:border-slate-700 transition-all group"
+            {display.map((movie, i) => (
+              <motion.div key={movie.id}
+                initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.03 }}
+                className="flex items-center gap-4 p-4 rounded-xl group transition-all duration-300"
+                style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}
+                whileHover={{ background: 'rgba(6,182,212,0.04)', borderColor: 'rgba(6,182,212,0.15)' }}
               >
-                {/* Poster thumbnail */}
-                <img
-                  src={movie.posterUrl || placeholder(movie.title)}
-                  alt={movie.title}
-                  className="w-10 rounded-lg object-cover flex-shrink-0"
-                  style={{ height: '60px' }}
-                  onError={e => { e.target.src = placeholder(movie.title) }}
-                />
-
-                {/* Info */}
+                <img src={movie.posterUrl || placeholder(movie.title)} alt={movie.title}
+                     className="w-10 rounded-lg object-cover flex-shrink-0"
+                     style={{ height: '60px' }}
+                     onError={e => { e.target.src = placeholder(movie.title) }} />
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-slate-200 text-sm truncate">{movie.title}</p>
-                  <div className="flex items-center gap-3 mt-1 flex-wrap">
-                    <span className="text-xs text-slate-500">{movie.releaseYear}</span>
-                    {movie.language && <span className="text-xs text-slate-600">{movie.language}</span>}
-                    <span className={`badge text-xs ${
-                      movie.status === 'RELEASED'      ? 'badge-green' :
-                      movie.status === 'UPCOMING'      ? 'badge-blue'  : 'badge-amber'
+                  <p className="font-mono text-sm text-slate-300 truncate">{movie.title}</p>
+                  <div className="flex items-center gap-2 mt-1 flex-wrap">
+                    <span className="font-mono text-xs text-slate-600">{movie.releaseYear}</span>
+                    <span className={`text-xs font-mono px-2 py-0.5 rounded-full ${
+                      movie.status === 'RELEASED' ? 'badge-green' : movie.status === 'UPCOMING' ? 'badge-cyan' : 'badge-amber'
                     }`}>{movie.status}</span>
-                    {movie.genres?.slice(0, 2).map(g => (
-                      <span key={g} className="text-xs text-slate-600">{g}</span>
+                    {movie.genres?.slice(0,2).map(g => (
+                      <span key={g} className="text-xs text-slate-700 font-mono">{g}</span>
                     ))}
                   </div>
                 </div>
-
-                {/* Rating */}
                 {movie.averageRating > 0 && (
-                  <div className="hidden sm:flex items-center gap-1 text-amber-400 flex-shrink-0">
-                    <Star size={13} className="fill-amber-400" />
-                    <span className="text-sm font-medium">{movie.averageRating?.toFixed(1)}</span>
-                    <span className="text-xs text-slate-600">({movie.totalRatings})</span>
+                  <div className="hidden sm:flex items-center gap-1 flex-shrink-0">
+                    <Star size={12} className="text-amber-400 fill-amber-400" />
+                    <span className="font-mono text-xs text-amber-400">{movie.averageRating?.toFixed(1)}</span>
                   </div>
                 )}
-
-                {/* Actions */}
-                <div className="flex gap-2 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button
-                    onClick={() => openEdit(movie)}
-                    className="p-2 text-slate-500 hover:text-amber-400 hover:bg-amber-500/10 rounded-lg transition-all"
-                  >
-                    <Pencil size={14} />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(movie.id)}
-                    className="p-2 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
-                  >
-                    <Trash2 size={14} />
-                  </button>
+                <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                  <motion.button whileHover={{ scale: 1.1 }} onClick={() => openEdit(movie)}
+                    className="p-2 rounded-lg text-slate-600 hover:text-cyan-400 transition-colors"
+                    style={{ background: 'rgba(6,182,212,0.08)' }}>
+                    <Pencil size={13} />
+                  </motion.button>
+                  <motion.button whileHover={{ scale: 1.1 }} onClick={() => handleDelete(movie.id)}
+                    className="p-2 rounded-lg text-slate-600 hover:text-rose-400 transition-colors"
+                    style={{ background: 'rgba(244,63,94,0.08)' }}>
+                    <Trash2 size={13} />
+                  </motion.button>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
 
-          {/* Pagination — only when not in search mode */}
+          {/* Pagination */}
           {searchResults === null && totalPages > 1 && (
-            <div className="flex items-center justify-center gap-3 mt-8">
-              <button
-                onClick={() => fetchMovies(page - 1)}
-                disabled={page === 0}
-                className="btn-secondary px-4 py-2 text-sm disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                ← Prev
-              </button>
-              <span className="text-sm text-slate-500">
-                Page <span className="text-amber-400 font-medium">{page + 1}</span> of {totalPages}
+            <div className="flex items-center justify-center gap-4 mt-8">
+              <motion.button whileHover={{ scale: 1.05 }} onClick={() => fetchMovies(page - 1)} disabled={page === 0}
+                className="btn-ghost text-xs font-mono tracking-widest flex items-center gap-1.5 disabled:opacity-30">
+                <ChevronLeft size={13} /> PREV
+              </motion.button>
+              <span className="font-mono text-xs text-slate-600">
+                <span className="text-cyan-400">{page + 1}</span> / {totalPages}
               </span>
-              <button
-                onClick={() => fetchMovies(page + 1)}
-                disabled={page >= totalPages - 1}
-                className="btn-secondary px-4 py-2 text-sm disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                Next →
-              </button>
+              <motion.button whileHover={{ scale: 1.05 }} onClick={() => fetchMovies(page + 1)} disabled={page >= totalPages - 1}
+                className="btn-ghost text-xs font-mono tracking-widest flex items-center gap-1.5 disabled:opacity-30">
+                NEXT <ChevronRight size={13} />
+              </motion.button>
             </div>
           )}
         </>
       )}
 
-      {/* ── Create / Edit Modal ───────────────────────────────────────────── */}
-      <Modal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        title={editing ? `Edit — ${editing.title}` : 'Add New Movie'}
-      >
+      {/* Modal */}
+      <BlurModal isOpen={modalOpen} onClose={() => setModal(false)}
+        title={editing ? `EDIT — ${editing.title?.toUpperCase()}` : 'ADD NEW MOVIE'} wide>
         <form onSubmit={handleSave} className="space-y-5">
-
-          {/* Title + Year row */}
+          {/* Title + Year */}
           <div className="grid grid-cols-3 gap-3">
             <div className="col-span-2">
-              <label className="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wider">Title *</label>
-              <input
-                value={form.title}
-                onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-                required
-                placeholder="Movie title"
-                className="input-field"
-              />
+              <label className="block font-mono text-xs text-slate-500 tracking-widest mb-2">TITLE *</label>
+              <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
+                required placeholder="Movie title" className="input-field" />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wider">Year *</label>
-              <input
-                type="number"
-                value={form.releaseYear}
-                onChange={e => setForm(f => ({ ...f, releaseYear: e.target.value }))}
-                required
-                placeholder="2024"
-                min="1900"
-                max="2100"
-                className="input-field"
-              />
+              <label className="block font-mono text-xs text-slate-500 tracking-widest mb-2">YEAR *</label>
+              <input type="number" value={form.releaseYear} onChange={e => setForm(f => ({ ...f, releaseYear: e.target.value }))}
+                required placeholder="2024" min="1900" max="2100" className="input-field" />
             </div>
           </div>
 
           {/* Description */}
           <div>
-            <label className="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wider">Description</label>
-            <textarea
-              value={form.description}
-              onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-              rows={3}
-              placeholder="Plot summary..."
-              className="input-field resize-none"
-            />
+            <label className="block font-mono text-xs text-slate-500 tracking-widest mb-2">SYNOPSIS</label>
+            <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+              rows={3} placeholder="Plot summary..." className="input-field resize-none text-sm font-light" />
           </div>
 
           {/* Poster + Trailer */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wider">Poster URL</label>
-              <input
-                value={form.posterUrl}
-                onChange={e => setForm(f => ({ ...f, posterUrl: e.target.value }))}
-                placeholder="https://..."
-                className="input-field"
-              />
+              <label className="block font-mono text-xs text-slate-500 tracking-widest mb-2">POSTER URL</label>
+              <input value={form.posterUrl} onChange={e => setForm(f => ({ ...f, posterUrl: e.target.value }))}
+                placeholder="https://..." className="input-field" />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wider">Trailer URL</label>
-              <input
-                value={form.trailerUrl}
-                onChange={e => setForm(f => ({ ...f, trailerUrl: e.target.value }))}
-                placeholder="https://youtube.com/..."
-                className="input-field"
-              />
+              <label className="block font-mono text-xs text-slate-500 tracking-widest mb-2">TRAILER URL</label>
+              <input value={form.trailerUrl} onChange={e => setForm(f => ({ ...f, trailerUrl: e.target.value }))}
+                placeholder="https://youtube.com/..." className="input-field" />
             </div>
           </div>
 
-          {/* Language + Country + Duration + Status */}
+          {/* Meta grid */}
           <div className="grid grid-cols-2 gap-3">
+            {[
+              { label: 'LANGUAGE', key: 'language', placeholder: 'English' },
+              { label: 'COUNTRY',  key: 'country',  placeholder: 'USA' },
+            ].map(({ label, key, placeholder }) => (
+              <div key={key}>
+                <label className="block font-mono text-xs text-slate-500 tracking-widest mb-2">{label}</label>
+                <input value={form[key]} onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
+                  placeholder={placeholder} className="input-field" />
+              </div>
+            ))}
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wider">Language</label>
-              <input
-                value={form.language}
-                onChange={e => setForm(f => ({ ...f, language: e.target.value }))}
-                placeholder="English"
-                className="input-field"
-              />
+              <label className="block font-mono text-xs text-slate-500 tracking-widest mb-2">DURATION (MIN)</label>
+              <input type="number" value={form.durationMinutes} onChange={e => setForm(f => ({ ...f, durationMinutes: e.target.value }))}
+                placeholder="148" min="1" className="input-field" />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wider">Country</label>
-              <input
-                value={form.country}
-                onChange={e => setForm(f => ({ ...f, country: e.target.value }))}
-                placeholder="USA"
-                className="input-field"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wider">Duration (mins)</label>
-              <input
-                type="number"
-                value={form.durationMinutes}
-                onChange={e => setForm(f => ({ ...f, durationMinutes: e.target.value }))}
-                placeholder="148"
-                min="1"
-                className="input-field"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wider">Status</label>
-              <select
-                value={form.status}
-                onChange={e => setForm(f => ({ ...f, status: e.target.value }))}
-                className="input-field cursor-pointer"
-              >
+              <label className="block font-mono text-xs text-slate-500 tracking-widest mb-2">STATUS</label>
+              <select value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))}
+                className="input-field cursor-pointer font-mono text-sm">
                 {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
             </div>
           </div>
 
-          {/* Genres multi-select */}
+          {/* Genres */}
           <div>
-            <label className="block text-xs font-medium text-slate-400 mb-2 uppercase tracking-wider">
-              Genres
-              {form.genreIds.length > 0 && (
-                <span className="ml-2 text-amber-400 normal-case">{form.genreIds.length} selected</span>
-              )}
+            <label className="block font-mono text-xs text-slate-500 tracking-widest mb-2">
+              GENRES
+              {form.genreIds.length > 0 && <span className="ml-2 text-cyan-400">{form.genreIds.length} SELECTED</span>}
             </label>
-            <div className="flex flex-wrap gap-2 p-3 bg-[#08080F] border border-[#1E1E2E] rounded-lg min-h-[48px]">
+            <div className="flex flex-wrap gap-2 p-3 rounded-xl min-h-[48px]"
+                 style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.06)' }}>
               {genres.map(g => {
-                const selected = form.genreIds.includes(g.id)
+                const sel = form.genreIds.includes(g.id)
                 return (
-                  <button
-                    key={g.id}
-                    type="button"
-                    onClick={() => toggleGenre(g.id)}
-                    className={`text-xs px-3 py-1.5 rounded-full border transition-all ${
-                      selected
-                        ? 'bg-amber-500/20 border-amber-500/50 text-amber-400'
-                        : 'bg-transparent border-slate-700 text-slate-500 hover:border-slate-500 hover:text-slate-300'
-                    }`}
-                  >
+                  <motion.button key={g.id} type="button" onClick={() => toggleGenre(g.id)}
+                    whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                    className="text-xs px-3 py-1.5 rounded-full font-mono transition-all duration-200"
+                    style={sel
+                      ? { background: 'rgba(6,182,212,0.2)', border: '1px solid rgba(6,182,212,0.5)', color: '#06B6D4' }
+                      : { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#64748B' }
+                    }>
                     {g.name}
-                  </button>
+                  </motion.button>
                 )
               })}
-              {genres.length === 0 && (
-                <p className="text-xs text-slate-600 italic">No genres available — add genres first</p>
-              )}
             </div>
           </div>
 
-          {/* Cast Members multi-select with search */}
+          {/* Cast */}
           <div>
-            <label className="block text-xs font-medium text-slate-400 mb-2 uppercase tracking-wider">
-              Cast & Crew
-              {form.castMemberIds.length > 0 && (
-                <span className="ml-2 text-amber-400 normal-case">{form.castMemberIds.length} selected</span>
-              )}
+            <label className="block font-mono text-xs text-slate-500 tracking-widest mb-2">
+              CAST & CREW
+              {form.castMemberIds.length > 0 && <span className="ml-2 text-cyan-400">{form.castMemberIds.length} SELECTED</span>}
             </label>
-
-            {/* Cast search box */}
             <div className="relative mb-2">
-              <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-600" />
-              <input
-                value={castSearch}
-                onChange={handleCastSearch}
-                placeholder="Search cast members..."
-                className="input-field pl-8 text-xs py-2"
-              />
+              <Search size={12} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-700" />
+              <input value={castSearch} onChange={handleCastSearch}
+                placeholder="SEARCH CAST..." className="input-field pl-9 text-xs font-mono py-2" />
             </div>
-
-            <div className="max-h-40 overflow-y-auto flex flex-col gap-1 p-2 bg-[#08080F] border border-[#1E1E2E] rounded-lg">
-              {castMembers.map(c => {
-                const selected = form.castMemberIds.includes(c.id)
+            <div className="max-h-44 overflow-y-auto rounded-xl no-scrollbar"
+                 style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.06)' }}>
+              {cast.map(c => {
+                const sel = form.castMemberIds.includes(c.id)
                 return (
-                  <button
-                    key={c.id}
-                    type="button"
-                    onClick={() => toggleCast(c.id)}
-                    className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs transition-all text-left ${
-                      selected
-                        ? 'bg-amber-500/15 border border-amber-500/30 text-amber-400'
-                        : 'hover:bg-white/5 text-slate-400 border border-transparent'
-                    }`}
+                  <motion.button key={c.id} type="button" onClick={() => toggleCast(c.id)}
+                    className="w-full flex items-center justify-between px-3 py-2.5 text-xs transition-all duration-200 text-left"
+                    style={sel
+                      ? { background: 'rgba(6,182,212,0.1)', borderBottom: '1px solid rgba(6,182,212,0.1)' }
+                      : { borderBottom: '1px solid rgba(255,255,255,0.03)' }
+                    }
+                    whileHover={{ background: 'rgba(255,255,255,0.04)' }}
                   >
-                    <span className="font-medium">{c.name}</span>
-                    <span className={`text-xs px-2 py-0.5 rounded-full ${selected ? 'bg-amber-500/20 text-amber-500' : 'bg-white/5 text-slate-600'}`}>
+                    <span className={`font-mono ${sel ? 'text-cyan-400' : 'text-slate-500'}`}>{c.name}</span>
+                    <span className={`text-xs font-mono px-2 py-0.5 rounded-full ${sel ? 'bg-cyan-400/20 text-cyan-400' : 'bg-white/5 text-slate-700'}`}>
                       {c.primaryRole}
                     </span>
-                  </button>
+                  </motion.button>
                 )
               })}
-              {castMembers.length === 0 && (
-                <p className="text-xs text-slate-600 italic px-2 py-1">No results found</p>
-              )}
             </div>
           </div>
 
-          {/* Submit */}
-          <div className="flex gap-3 pt-2 border-t border-[#1E1E2E]">
-            <button
-              type="submit"
-              disabled={saving}
-              className="btn-primary flex-1 py-3 disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-              {saving ? 'Saving...' : editing ? 'Update Movie' : 'Create Movie'}
-            </button>
-            <button
-              type="button"
-              onClick={() => setModalOpen(false)}
-              className="btn-secondary px-6"
-            >
-              Cancel
-            </button>
+          <div className="flex gap-3 pt-2">
+            <GradientButton type="submit" disabled={saving} className="flex-1 text-xs tracking-widest py-3.5">
+              {saving ? 'SAVING...' : editing ? 'UPDATE MOVIE' : 'CREATE MOVIE'}
+            </GradientButton>
+            <motion.button type="button" whileHover={{ scale: 1.02 }} onClick={() => setModal(false)}
+              className="btn-ghost px-6 text-xs tracking-widest">CANCEL</motion.button>
           </div>
         </form>
-      </Modal>
+      </BlurModal>
     </div>
   )
 }
