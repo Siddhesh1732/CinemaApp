@@ -34,7 +34,6 @@ export default function MovieCard({ movie, index = 0 }) {
       <Link to={`/movies/${movie.id}`}>
         <motion.div
           ref={ref}
-          style={{ rotateX, rotateY, transformStyle: 'preserve-3d' }}
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
           whileHover={{ scale: 1.03, z: 20 }}

@@ -150,7 +150,7 @@ export function RegisterPage() {
       const { register } = await import('../api/authApi')
       const res = await register(form)
       login(res.data.token, { username: res.data.username, email: res.data.email, role: res.data.role })
-      toast.success(`Welcome to CINEX, ${res.data.username}!`)
+      toast.success(`Welcome to CINEMA-PAGLU, ${res.data.username}!`)
       navigate('/home')
     } catch (err) {
       toast.error(err.response?.data?.message || err.response?.data?.error || 'Registration failed')
