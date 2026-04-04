@@ -1,16 +1,15 @@
 services:
   backend:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: siddheshkaremore/cinema-paglu-backend:latest
     container_name: cinema-backend
     ports:
       - "8080:8080"
     environment:
       DB_URL: ${DB_URL}
-      DB_USER: ${DB_USER}
-      DB_PWD: ${DB_PWD}
+      DB_USERNAME: ${DB_USER}
+      DB_PASSWORD: ${DB_PWD}
       JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: 86400000
     restart: unless-stopped
     healthcheck:
       test: [ "CMD", "wget", "--spider", "-q", "http://localhost:8080/actuator/health" ]
@@ -20,9 +19,7 @@ services:
       start_period: 60s
 
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
+    image: siddheshkaremore/cinema-paglu-frontend:latest
     container_name: cinema-frontend
     ports:
       - "80:80"
