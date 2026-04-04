@@ -242,7 +242,7 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer className="relative z-10 py-8 text-center border-t" style={{ borderColor: 'rgba(255,255,255,0.04)' }}>
-        <p className="font-mono text-xs text-slate-700 tracking-widest">CINEMA-PAGLU — BUILT WITH SPRING BOOT + REACT</p>
+        <p className="font-mono text-xs text-slate-700 tracking-widest">CINEMA-PAGLU — BUILT WITH SPRING-BOOT + REACT</p>
       </footer>
     </div>
   )
