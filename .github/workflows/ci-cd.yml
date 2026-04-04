@@ -31,10 +31,9 @@ jobs:
       - name: Build with Maven
         env:
           DB_URL: ${{ secrets.DB_URL }}
-          DB_USERNAME: ${{ secrets.DB_USER }}
-          DB_PASSWORD: ${{ secrets.DB_PWD }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PWD: ${{ secrets.DB_PWD }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
-          JWT_EXPIRATION: 86400000
         run: mvn clean package -DskipTests -B
 
   # ── Job 2: Build Frontend ────────────────────────────────────
