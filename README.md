@@ -1,381 +1,544 @@
 <div align="center">
 
-# 🎬 CinemaApp
+# 🎬 CINEMA-PAGLU
 
-### *Your Personal Movie Universe*
+### *Your Universe. Your Watchlist. Your Reviews. Evolved.*
+
+<br/>
 
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
-[![React](https://img.shields.io/badge/React-18.x-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org/)
-[![MySQL](https://img.shields.io/badge/MySQL-8.x-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com/)
-[![JWT](https://img.shields.io/badge/JWT-Auth-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white)](https://jwt.io/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.x-38B2AC?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![Java](https://img.shields.io/badge/Java-21-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](https://openjdk.org/)
+[![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-NeonDB-336791?style=for-the-badge&logo=postgresql&logoColor=white)](https://neon.tech/)
+[![Docker](https://img.shields.io/badge/Docker-Containerized-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
+[![AWS](https://img.shields.io/badge/AWS-EC2-FF9900?style=for-the-badge&logo=amazonaws&logoColor=white)](https://aws.amazon.com/)
+[![JWT](https://img.shields.io/badge/Auth-JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white)](https://jwt.io/)
+[![License](https://img.shields.io/badge/License-MIT-purple?style=for-the-badge)](LICENSE)
+[![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white)](https://github.com/features/actions)
 
-**Discover movies. Track what you've watched. Share with friends.**
+<br/>
 
-[Features](#-features) • [Screenshots](#-screenshots) • [Tech Stack](#-tech-stack) • [Getting Started](#-getting-started) • [API Docs](#-api-endpoints) • [Project Structure](#-project-structure)
+> **A full-stack movie social platform** — track, rate, review, and discover films with a content-based recommendation engine and a futuristic sci-fi HUD aesthetic.  
+> Built end-to-end as a production-grade portfolio project targeting Amazon SDE1.
+
+<br/>
+
+🌐 **Live Demo:** [`http://13.51.6.255`](http://13.51.6.255) &nbsp;
+</div>
 
 ---
 
-</div>
+## 📖 Overview
+
+**CINEMA-PAGLU** is a Letterboxd/MyAnimeList-inspired movie tracking and social platform, built independently from scratch. It demonstrates a complete production-grade engineering workflow — from thoughtful database schema design and RESTful API development, to a React frontend with advanced animations, a pure-Java recommendation engine, CI/CD via GitHub Actions, and Docker + AWS EC2 deployment.
+
+> ⚡ *Not just a CRUD app. Every design decision has an intentional engineering reason behind it.*
+
+---
 
 ## ✨ Features
 
-<table>
-<tr>
-<td width="50%">
+### 🔐 Authentication & Authorization
+- Stateless **JWT authentication** — every request carries its own identity proof
+- **Role-based access control** — `USER` / `ADMIN` roles via Spring Security + `@PreAuthorize`
+- BCrypt password hashing — no plain-text secrets, ever
 
-**🎥 Movie Discovery**
-- Browse all movies with pagination
-- Search by title
-- Filter by genre
-- Sort by year, rating, or title
+### 🎥 Movie Discovery
+- Browse, search by title, filter by genre, sort by year or rating
+- Server-side pagination for large datasets
+- Community **average rating** auto-calculated and stored on every submission
+- Movie detail pages with cast, trailers, and member reviews
 
-</td>
-<td width="50%">
+### 📋 Personal Tracking
+- **Three simultaneous lists per user** — Watched, Watchlist, Liked
+  - A movie can exist in multiple lists at once (architectural decision: single normalized `user_movie_list` table with an enum discriminator)
+- 1–5 **star rating** with written reviews on watched movies
+- Full list management — add, update, remove entries
 
-**📋 Personal Lists**
-- Mark movies as **Watched**
-- Save to **Watchlist**
-- Add to **Liked** movies
-- Same movie can be in multiple lists
+### 🤖 Recommendation Engine
+- Pure-Java **content-based filtering** — no ML framework dependency
+- Scores unwatched movies by **genre** (weight 3) + **cast** (weight 2) + **language** (weight 1)
+- Preferences derived from the user's highly-rated watches
+- **Cold-start fallback** — top-rated movies served when watch history is sparse
 
-</td>
-</tr>
-<tr>
-<td width="50%">
+### 👥 Social Layer
+- **Friendship system** — send, accept, reject, and block requests
+- View friends' public lists and activity
+- Member reviews visible to all users on every movie page
 
-**⭐ Ratings & Reviews**
-- Rate movies on a **1–10 scale**
-- Leave personal written reviews
-- Community average rating auto-updates
-- Only watchable after marking as Watched
+### 🛠️ Admin Panel
+- Full **CRUD** for Movies, Genres, and Cast Members
+- Role-protected endpoints — only `ADMIN` can write; all users can read
 
-</td>
-<td width="50%">
-
-**👥 Friends & Social**
-- Send / accept / reject friend requests
-- View friends' movie lists
-- Privacy protected — lists visible to friends only
-- Search for users by username
-
-</td>
-</tr>
-<tr>
-<td width="50%">
-
-**🔐 Secure Authentication**
-- JWT-based stateless auth
-- BCrypt password hashing
-- Auto token refresh handling
-- Role-based access (USER / ADMIN)
-
-</td>
-<td width="50%">
-
-**🛡️ Admin Panel**
-- Full CRUD for Movies
-- Manage Genres
-- Manage Cast Members
-- Admin-only protected routes
-
-</td>
-</tr>
-</table>
+### ⚙️ Engineering Extras
+- **Swagger UI** — interactive API documentation at `/swagger-ui.html` with JWT bearer auth
+- **GlobalExceptionHandler** — centralized error handling across all 8 modules
+- **SLF4J + Logback** logging throughout all service layers
+- **CI/CD pipeline** — GitHub Actions: build → test → Dockerize → deploy, ~2.5 min end-to-end
 
 ---
 
-## 📸 Screenshots
+## 🏗️ Architecture & Workflow
 
-> **Landing Page**
-![Landing Page](screenshots/landing.png)
+### System Layers
+
+```
+┌──────────────────────────────────────────────────────────┐
+│                     React 18 Frontend                    │
+│        (Vite + Tailwind + Framer Motion + Axios)         │
+└─────────────────────────┬────────────────────────────────┘
+                          │ HTTP / REST (JSON)
+┌─────────────────────────▼────────────────────────────────┐
+│              Spring Boot Application (Java 21)            │
+│                                                          │
+│  ┌────────────┐  ┌────────────┐  ┌────────────────────┐  │
+│  │ Controller │→ │  Service   │→ │    Repository      │  │
+│  │  (REST)    │  │ (Business) │  │ (Spring Data JPA)  │  │
+│  └────────────┘  └────────────┘  └────────────────────┘  │
+│          ↑                                               │
+│  JwtAuthFilter → SecurityConfig → SecurityContext        │
+└─────────────────────────┬────────────────────────────────┘
+                          │ JDBC / Hibernate ORM
+┌─────────────────────────▼────────────────────────────────┐
+│           PostgreSQL (NeonDB — Cloud Hosted)              │
+└──────────────────────────────────────────────────────────┘
+```
+
+### Security Filter Chain
+
+```
+HTTP Request
+    │
+    ▼
+JwtAuthFilter
+    ├── Reads: Authorization: Bearer <token>
+    ├── Extracts email via JwtUtil.extractEmail()
+    ├── Loads user from DB via CustomUserDetailsService
+    └── Validates token signature + expiry → sets SecurityContext
+    │
+    ▼
+SecurityConfig
+    ├── Public endpoint? → Allow through
+    ├── Authenticated required? → 401 if missing token
+    └── ADMIN role required? (@PreAuthorize) → 403 if unauthorized
+    │
+    ▼
+Controller → Service → Repository → Response DTO
+```
+
+### End-to-End Request Flow Example
+
+```
+User clicks "Add to Watched"
+    │
+    ▼
+React → POST /api/user-movies (Axios auto-attaches Bearer token)
+    │
+    ▼
+JwtAuthFilter validates token
+    │
+    ▼
+UserMovieListController → @Valid checks DTO
+    │
+    ▼
+UserMovieListService.addToList()
+    ├── Checks movie exists
+    ├── Checks for duplicate in same list
+    └── Saves row to DB
+    │
+    ▼
+UserMovieListRepository executes INSERT via Hibernate
+    │
+    ▼
+201 Created → UserMovieListResponse DTO as JSON
+    │
+    ▼
+React updates local state instantly — no page reload
+```
+
+### CI/CD Pipeline
+
+```
+git push origin main
+    │
+    ▼
+GitHub Actions Triggered
+    │
+    ├── [Job 1] Build Backend  ──┐
+    │   Java 21 + Maven          │  (parallel)
+    ├── [Job 2] Build Frontend ──┘
+    │   Node 18 + Vite
+    │
+    ▼  (both must pass)
+    │
+    ├── [Job 3] Build & Push Docker Images
+    │   → siddheshkaremore/cinema-paglu-backend:latest
+    │   → siddheshkaremore/cinema-paglu-frontend:latest
+    │
+    ▼
+    ├── [Job 4] Deploy to EC2 (~19s)
+    │   SCP compose file → SSH into EC2
+    │   Write .env from GitHub Secrets
+    │   docker-compose pull → down → up -d
+    │   docker image prune -f
+    │
+    ▼
+✅ Live at http://13.51.6.255  (~2m 30s total)
+```
 
 ---
 
-> **Home — Explore Movies**
-![Home Page](screenshots/home.png)
-
----
-
-> **Movie Detail Page**
-![Movie Detail](screenshots/movie-detail.png)
-
----
-
-> **My Profile — Lists**
-![My Profile](screenshots/profile.png)
-
----
-
-> **Friends Page**
-![Friends](screenshots/friends.png)
-
----
-
-> **Admin Panel**
-![Admin Panel](screenshots/admin.png)
-
----
-
-## 🛠 Tech Stack
+## 🛠️ Tech Stack
 
 ### Backend
-| Technology | Purpose |
-|---|---|
-| Java 21 | Primary language |
-| Spring Boot 3.x | Core backend framework |
-| Spring Security + JWT | Authentication & authorization |
-| Spring Data JPA + Hibernate | ORM — database interaction |
-| MySQL 8.x | Relational database |
-| Maven | Build tool & dependency management |
-| Lombok | Boilerplate reduction |
-| SpringDoc OpenAPI (Swagger) | API documentation |
+
+| Layer | Technology | Purpose |
+|---|---|---|
+| Framework | Spring Boot 3.x | Core REST API, DI, Security |
+| Language | Java 21 | Primary backend language |
+| Database | PostgreSQL (NeonDB) | Relational persistence |
+| ORM | Spring Data JPA + Hibernate | Entity mapping, zero raw SQL |
+| Security | Spring Security + JWT (JJWT) | Stateless auth, RBAC |
+| Build | Maven | Dependency mgmt, build lifecycle |
+| API Docs | SpringDoc OpenAPI (Swagger) | Interactive API explorer |
+| Logging | SLF4J + Logback | Service-layer observability |
+| Boilerplate | Lombok | Eliminates getters/setters/builders |
 
 ### Frontend
-| Technology | Purpose |
-|---|---|
-| React 18 | UI framework |
-| Vite | Build tool & dev server |
-| React Router DOM v6 | Client-side routing |
-| Axios | HTTP client for API calls |
-| Tailwind CSS | Utility-first styling |
-| React Toastify | Toast notifications |
-| Lucide React | Icon library |
+
+| Layer | Technology | Purpose |
+|---|---|---|
+| Framework | React 18 + Vite | Component-based UI, fast HMR |
+| Animations | Framer Motion | 3D card tilt, spring physics, transitions |
+| Styling | Tailwind CSS | Utility-first, sci-fi HUD aesthetic |
+| HTTP Client | Axios | API calls with interceptors for JWT |
+| Routing | React Router DOM v6 | Client-side navigation, route protection |
+| Notifications | React Toastify | Success/error toast messages |
+| Icons | Lucide React | Icon system throughout UI |
+| Typography | Orbitron + Syne + JetBrains Mono | Futuristic font system |
+
+### Infrastructure & DevOps
+
+| Component | Technology | Details |
+|---|---|---|
+| Containerization | Docker (multi-stage builds) | ~25MB Nginx frontend image |
+| Orchestration | Docker Compose | EC2-hosted, health-check gated startup |
+| CI/CD | GitHub Actions | Auto build → push → deploy on every push |
+| Cloud | AWS EC2 t2.micro | Amazon Linux 2, free-tier eligible |
+| Container Registry | Docker Hub | Pre-built images pulled on deploy |
+| Database Host | NeonDB | Serverless cloud PostgreSQL, SSL enforced |
 
 ---
 
-## 🚀 Getting Started
+## 📂 Project Structure
+
+```
+cinema/
+├── .github/
+│   └── workflows/
+│       └── ci-cd.yml               # Full CI/CD pipeline definition
+│
+├── src/main/java/com/cinemapaglu/
+│   ├── controller/                 # REST endpoints (8 controllers)
+│   │   ├── AuthController.java
+│   │   ├── MovieController.java
+│   │   ├── GenreController.java
+│   │   ├── CastMemberController.java
+│   │   ├── UserController.java
+│   │   ├── UserMovieListController.java
+│   │   ├── FriendshipController.java
+│   │   └── RecommendationController.java
+│   │
+│   ├── service/                    # Business logic layer
+│   │   ├── AuthService.java
+│   │   ├── MovieService.java
+│   │   ├── RecommendationService.java  ← content-based engine
+│   │   └── ...
+│   │
+│   ├── repository/                 # Spring Data JPA repos
+│   ├── entity/                     # JPA-mapped DB entities
+│   │   ├── User.java
+│   │   ├── Movie.java
+│   │   ├── UserMovieList.java      ← core normalized table
+│   │   ├── Friendship.java
+│   │   └── ...
+│   │
+│   ├── dto/
+│   │   ├── request/                # Incoming API payloads
+│   │   └── response/               # Outgoing API response objects
+│   │
+│   ├── security/                   # JWT + Spring Security config
+│   │   ├── JwtUtil.java
+│   │   ├── JwtAuthFilter.java
+│   │   ├── CustomUserDetailsService.java
+│   │   └── SecurityConfig.java
+│   │
+│   ├── exception/
+│   │   └── GlobalExceptionHandler.java  ← centralized error handling
+│   │
+│   └── config/
+│       └── SwaggerConfig.java
+│
+├── frontend/
+│   ├── src/
+│   │   ├── components/             # Reusable UI components
+│   │   ├── pages/                  # Route-level page components
+│   │   ├── context/                # React context (auth state)
+│   │   ├── api/                    # Axios instances + API calls
+│   │   └── main.jsx
+│   │
+│   ├── Dockerfile                  # Multi-stage: Node build → Nginx serve
+│   ├── nginx.conf                  # SPA fallback + API proxy to :8080
+│   └── vite.config.js
+│
+├── Dockerfile                      # Multi-stage: Maven build → JRE Alpine
+├── docker-compose.yml              # Orchestrates backend + frontend
+├── .dockerignore
+└── pom.xml
+```
+
+---
+
+## ⚡ Getting Started
 
 ### Prerequisites
 
-Make sure the following are installed on your machine:
-
-- **Java 21+** → `java -version`
-- **Maven** → `mvn -version`
-- **Node.js v18+** → `node -v`
-- **MySQL 8+** → running locally
+| Tool | Version |
+|---|---|
+| Java (JDK) | 21+ |
+| Maven | 3.9+ |
+| Node.js | 18+ |
+| Docker + Docker Compose | Latest |
+| PostgreSQL | 15+ (or NeonDB account) |
 
 ---
 
-### 1. Clone the Repository
+### 🐳 Option A — Run with Docker Compose (Recommended)
 
+**1. Clone the repository**
 ```bash
-git clone https://github.com/yourusername/movieapp.git
-cd movieapp
+git clone https://github.com/Siddhesh1732/CinemaApp.git
+cd cinema
 ```
 
----
-
-### 2. Set Up the Database
-
-Open MySQL and run:
-
-```sql
-CREATE DATABASE movieapp;
+**2. Create your `.env` file** in the project root:
+```env
+DB_URL=jdbc:postgresql://<your-db-host>/<your-db-name>?sslmode=require
+DB_USER=your_db_username
+DB_PWD=your_db_password
+JWT_SECRET=your_super_secret_key_minimum_32_chars
 ```
 
----
-
-### 3. Configure `application.properties`
-
-Open `src/main/resources/application.properties` and update:
-
-```properties
-spring.datasource.url=jdbc:mysql://localhost:3306/movieapp
-spring.datasource.username=your_mysql_username
-spring.datasource.password=your_mysql_password
-
-spring.jpa.hibernate.ddl-auto=update
-spring.jpa.show-sql=true
-spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQLDialect
-
-jwt.secret=your_secret_key_minimum_32_characters_long
-jwt.expiration=86400000
-
-logging.level.org.springframework=INFO
-logging.level.com.project.cinema=DEBUG
-```
-
----
-
-### 4. Run the Backend
-
+**3. Pull and run**
 ```bash
+docker-compose pull
+docker-compose up -d
+```
+
+**4. Access the app**
+
+| Resource | URL |
+|---|---|
+| Frontend | `http://localhost` |
+| Backend API | `http://localhost:8080/api` |
+
+---
+
+### 🔧 Option B — Run Locally (Dev Mode)
+
+**Backend**
+```bash
+# Set environment variables (or use application.properties)
+export DB_URL=jdbc:postgresql://localhost:5432/cinema
+export DB_USER=postgres
+export DB_PWD=yourpassword
+export JWT_SECRET=your_minimum_32_char_secret_key_here
+
+cd cinema
+mvn clean package -DskipTests
 mvn spring-boot:run
 ```
 
-Backend starts on **`http://localhost:8080`**
-
----
-
-### 5. Run the Frontend
-
-Open a **second terminal**:
-
+**Frontend**
 ```bash
-cd movieapp-frontend
+cd cinema/frontend
 npm install
 npm run dev
-```
-
-Frontend starts on **`http://localhost:3000`**
-
----
-
-### 6. Open the App
-
-```
-http://localhost:3000
+# Runs at http://localhost:5173
+# Vite dev server proxies /api/* → http://localhost:8080
 ```
 
 ---
 
-### 7. Create an Admin User
+### 🔑 First Run
 
-Insert directly into MySQL to get admin access:
-
-```sql
-INSERT INTO users (username, email, password, role, is_active, created_at, updated_at)
-VALUES (
-  'admin',
-  'admin@movieapp.com',
-  '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LzTFmi458W2',
-  'ADMIN',
-  true,
-  NOW(),
-  NOW()
-);
-```
-
-> Password for this user is `admin123`
+1. Register a new account via `POST /api/auth/register`
+2. Login via `POST /api/auth/login` — copy the JWT token from the response
+3. Authorize in Swagger UI (click the 🔒 lock icon) and paste: `Bearer <your_token>`
+4. To create an ADMIN user, update the `role` column directly in the DB: `UPDATE users SET role = 'ADMIN' WHERE email = 'admin@example.com';`
 
 ---
 
-## 📡 API Endpoints
+## 🔌 API Endpoints
 
-### Auth
-| Method | Endpoint | Access | Description |
-|--------|----------|--------|-------------|
-| POST | `/api/auth/register` | Public | Register new user |
-| POST | `/api/auth/login` | Public | Login and get JWT token |
+### Authentication
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| `POST` | `/api/auth/register` | ❌ Public | Register new user |
+| `POST` | `/api/auth/login` | ❌ Public | Login, receive JWT |
 
 ### Movies
-| Method | Endpoint | Access | Description |
-|--------|----------|--------|-------------|
-| GET | `/api/movies` | User | Get all movies (paginated) |
-| GET | `/api/movies/{id}` | User | Get movie by ID |
-| GET | `/api/movies/search?q=` | User | Search movies by title |
-| POST | `/api/movies` | Admin | Create new movie |
-| PUT | `/api/movies/{id}` | Admin | Update movie |
-| DELETE | `/api/movies/{id}` | Admin | Delete movie |
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| `GET` | `/api/movies` | ✅ User | Browse all movies (paginated, filterable) |
+| `GET` | `/api/movies/{id}` | ✅ User | Get movie detail with cast |
+| `POST` | `/api/movies` | 🔒 Admin | Create movie |
+| `PUT` | `/api/movies/{id}` | 🔒 Admin | Update movie |
+| `DELETE` | `/api/movies/{id}` | 🔒 Admin | Delete movie |
 
 ### User Movie Lists
-| Method | Endpoint | Access | Description |
-|--------|----------|--------|-------------|
-| POST | `/api/user-movies` | User | Add movie to a list |
-| DELETE | `/api/user-movies/{movieId}/{listType}` | User | Remove from list |
-| GET | `/api/user-movies/me/{listType}` | User | Get specific list |
-| GET | `/api/user-movies/me/all` | User | Get all three lists |
-| PUT | `/api/user-movies/{movieId}/rate` | User | Rate and review a movie |
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| `POST` | `/api/user-movies` | ✅ User | Add movie to list (WATCHED / WATCHLIST / LIKED) |
+| `GET` | `/api/user-movies/my-lists` | ✅ User | Get all 3 lists for current user |
+| `PUT` | `/api/user-movies/{id}/rate` | ✅ User | Rate + review a watched movie |
+| `DELETE` | `/api/user-movies/{id}` | ✅ User | Remove from list |
+| `GET` | `/api/movies/{id}/reviews` | ✅ User | Get all community reviews for a movie |
+
+### Recommendations
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| `GET` | `/api/recommendations` | ✅ User | Get personalized movie recommendations |
 
 ### Friendships
-| Method | Endpoint | Access | Description |
-|--------|----------|--------|-------------|
-| POST | `/api/friendships/request/{id}` | User | Send friend request |
-| PUT | `/api/friendships/accept/{id}` | User | Accept request |
-| PUT | `/api/friendships/reject/{id}` | User | Reject request |
-| DELETE | `/api/friendships/{id}` | User | Unfriend |
-| GET | `/api/friendships/me` | User | Get friends list |
-| GET | `/api/friendships/pending` | User | Get pending requests |
-| GET | `/api/friendships/{id}/lists/{listType}` | User | View friend's list |
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| `POST` | `/api/friendships/request/{userId}` | ✅ User | Send friend request |
+| `PUT` | `/api/friendships/{id}/accept` | ✅ User | Accept request |
+| `PUT` | `/api/friendships/{id}/reject` | ✅ User | Reject request |
+| `PUT` | `/api/friendships/{id}/block` | ✅ User | Block user |
+| `GET` | `/api/friendships` | ✅ User | Get all friends |
 
-> 📖 Full interactive API docs available at `http://localhost:8080/swagger-ui.html` when the backend is running.
-
----
-
-## 📁 Project Structure
-
-```
-movieapp/
-│
-├── src/                                  # Spring Boot backend
-│   └── main/java/com/project/cinema/
-│       ├── controller/                   # REST API endpoints
-│       ├── service/                      # Business logic
-│       ├── repository/                   # Database queries
-│       ├── entity/                       # JPA entity classes
-│       ├── dto/
-│       │   ├── request/                  # Incoming API payloads
-│       │   └── response/                 # Outgoing API responses
-│       ├── security/                     # JWT + Spring Security
-│       ├── exception/                    # Global error handling
-│       └── config/                       # Swagger config
-│
-├── movieapp-frontend/                    # React frontend
-│   └── src/
-│       ├── api/                          # Axios API calls (one file per module)
-│       ├── context/                      # AuthContext — global state
-│       ├── components/                   # Reusable UI components
-│       └── pages/
-│           ├── LandingPage.jsx
-│           ├── LoginPage.jsx
-│           ├── RegisterPage.jsx
-│           ├── HomePage.jsx
-│           ├── MovieDetailPage.jsx
-│           ├── MyProfilePage.jsx
-│           ├── FriendProfilePage.jsx
-│           ├── FriendsPage.jsx
-│           ├── SearchUsersPage.jsx
-│           └── admin/
-│               ├── AdminPanel.jsx
-│               ├── AdminMovies.jsx
-│               ├── AdminGenres.jsx
-│               └── AdminCastMembers.jsx
-│
-├── .gitignore
-├── pom.xml
-└── README.md
-```
+### Genres & Cast (Admin)
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| `GET` | `/api/genres` | ✅ User | List all genres |
+| `POST` | `/api/genres` | 🔒 Admin | Add genre |
+| `GET` | `/api/cast-members` | ✅ User | List cast members |
+| `POST` | `/api/cast-members` | 🔒 Admin | Add cast member |
 
 ---
 
-## 🗄️ Database Schema
+## 📸 Screenshots / Demo
 
-```
-users ──────────────── user_movie_list ──────────────── movies
-  │                                                       │
-  │                                                       ├── movie_genre ── genres
-  ├── friendships                                         │
-  │   (requester_id, addressee_id, status)                └── movie_cast ── cast_members
-  │
-  └── (one user → many list entries)
-```
+> 🚧 *Screenshots coming soon — UI is live at [`http://13.51.6.255`](http://13.51.6.255)*
 
----
-
-## 🔐 Environment Variables
-
-| Variable | Description |
+| View | Preview |
 |---|---|
-| `spring.datasource.url` | MySQL connection URL |
-| `spring.datasource.username` | MySQL username |
-| `spring.datasource.password` | MySQL password |
-| `jwt.secret` | Secret key for signing JWT tokens (min 32 chars) |
-| `jwt.expiration` | Token expiry in milliseconds (86400000 = 24 hours) |
+| 🏠 Landing Page | ![Landing Page](screenshots/landing.png) |
+| 🎬 Movie Discovery | ![Movie Discovery](screenshots/explore.png) |
+| 🎞️ Movie Detail Page | ![Movie Detail Page](screenshots/movie-details.png) |
+| 📋 My Lists (Watched/Watchlist/Liked) | ![My Lists](screenshots/lists.png) |
+| 🤖 Recommendations Page | ![Recommendations Page](screenshots/recommendation.png) |
+| 👥 Friends & Social | ![Friends & Social](screenshots/friends.png) |
+| 🛡️ Admin Panel | ![Admin Panel](screenshots/admin.png) |
 
-> ⚠️ **Never commit real credentials to GitHub.** Use placeholder values in the committed `application.properties`.
+---
+
+## 🌍 Future Enhancements
+
+### 🔴 High Priority
+- [ ] **Unit + Integration Tests** — JUnit 5 (services) + MockMvc (controllers) + H2 in-memory DB
+- [ ] **Redis Caching** — Cache recommendation results per user with TTL; reduce DB load
+- [ ] **RDS Migration** — Move from NeonDB to AWS RDS PostgreSQL for full AWS-native stack
+- [ ] **S3 + CloudFront** — Host React frontend on S3/CloudFront instead of EC2 Nginx
+
+### 🟡 Feature Depth
+- [ ] **Trending Movies** — Most list-added films in the last 7 days via JPQL `GROUP BY`
+- [ ] **Collaborative Filtering** — Complement content-based recs with taste-similarity matching
+- [ ] **Pre-computed Recommendations** — Move algorithm to `@Scheduled` nightly job; store results in DB
+- [ ] **Email Verification** — Confirmation link on register via JavaMailSender
+- [ ] **Password Reset Flow** — Time-limited reset token via email
+- [ ] **Cursor-based Pagination** — On friendship and review lists for scalability
+- [ ] **Soft Delete** — Mark movies as deleted; preserve rating history
+
+### 🟢 DevOps Maturity
+- [ ] **Spring Actuator** — `/actuator/health` for load balancer and uptime monitoring
+- [ ] **Rate Limiting** — Per-user request throttling to prevent API abuse
+- [ ] **Environment Profiles** — `application-dev.properties` vs `application-prod.properties`
+- [ ] **Microservices Split** — Recommendation engine as a standalone service
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Here's how to get started:
+
+```bash
+# 1. Fork the repository
+# 2. Create a feature branch
+git checkout -b feature/your-feature-name
+
+# 3. Make your changes
+# 4. Commit with a clear message
+git commit -m "feat: add your feature description"
+
+# 5. Push and open a Pull Request
+git push origin feature/your-feature-name
+```
+
+**Contribution Guidelines:**
+- Follow the existing package structure and layered architecture
+- DTOs in, DTOs out — never expose entity classes through API responses
+- Add `@Slf4j` logging to any new service class
+- Test your endpoints via Swagger UI before submitting
+
+---
+
+## 📄 License
+
+This project is licensed under the **MIT License**.
+
+```
+MIT License — free to use, modify, and distribute with attribution.
+```
 
 ---
 
 ## 👨‍💻 Author
 
-**Siddhesh**
-- GitHub: [@Siddhesh1732](https://github.com/Siddhesh1732)
+<div align="center">
+
+**Siddhesh Karemore**
+
+[![GitHub](https://img.shields.io/badge/GitHub-siddheshkaremore-181717?style=for-the-badge&logo=github)](https://github.com/Siddhesh1732)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-0A66C2?style=for-the-badge&logo=linkedin)](https://www.linkedin.com/in/siddhesh-karemore-a62586229/)
+[![Docker Hub](https://img.shields.io/badge/Docker%20Hub-siddheshkaremore-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://hub.docker.com/u/siddheshkaremore)
+
+*Full-Stack Developer · Backend Enthusiast*
+
+</div>
+
+---
+
+## ⭐ Call to Action
+
+<div align="center">
+
+**If this project impressed you, showed you something interesting, or helped you in any way:**
+
+[![Star](https://img.shields.io/badge/⭐%20Star%20this%20repo-yellow?style=for-the-badge)](https://github.com/Siddhesh1732/CinemaApp)
+[![Fork](https://img.shields.io/badge/🍴%20Fork%20it-blue?style=for-the-badge)](https://github.com/Siddhesh1732/CinemaApp/fork)
+[![Follow](https://img.shields.io/badge/👤%20Follow%20on%20GitHub-black?style=for-the-badge&logo=github)](https://github.com/Siddhesh1732)
+
+<br/>
+
+> *"Built not to exist, but to be remembered."*
+
+</div>
 
 ---
 
 <div align="center">
-
-Made with ❤️ using Spring Boot + React
-
+  <sub>Made with ☕, 🎬, and way too many git commits · CINEMA-PAGLU © 2026</sub>
 </div>
